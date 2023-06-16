@@ -83,14 +83,15 @@ class LeggedRobotCfg(BaseConfig):
         lin_vel = [0.0, 0.0, 0.0]  # x,y,z [m/s]
         ang_vel = [0.0, 0.0, 0.0]  # x,y,z [rad/s]
         default_joint_angles = { # target angles when action = 0.0
-            "joint_a": 0., 
-            "joint_b": 0.}
+            "joint": 0.}
 
     class control:
         control_type = 'P' # P: position, V: velocity, T: torques
         # PD Drive parameters:
-        stiffness = {'joint_a': 10.0, 'joint_b': 15.}  # [N*m/rad]
-        damping = {'joint_a': 1.0, 'joint_b': 1.5}     # [N*m*s/rad]
+        stiffness = {'joint': 10.0}  # [N*m/rad]
+        # stiffness = {'joint_a': 10.0, 'joint_b': 15.}  # [N*m/rad]
+        damping = {'joint': 1.0}     # [N*m*s/rad]
+        # damping = {'joint_a': 1.0, 'joint_b': 1.5}     # [N*m*s/rad]
         # action scale: target angle = actionScale * action + defaultAngle
         action_scale = 0.5
         # decimation: Number of control action updates @ sim DT per policy DT

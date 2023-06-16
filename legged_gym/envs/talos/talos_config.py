@@ -31,58 +31,104 @@
 from legged_gym.envs.base.legged_robot_config import LeggedRobotCfg, LeggedRobotCfgPPO
 
 class TalosRoughCfg( LeggedRobotCfg ):
+    class env( LeggedRobotCfg.env):
+        num_envs = 4096
+        num_observations = 169
+        num_actions = 12
+
+    
+    class terrain( LeggedRobotCfg.terrain):
+        measured_points_x = [-0.5, -0.4, -0.3, -0.2, -0.1, 0., 0.1, 0.2, 0.3, 0.4, 0.5] # 1mx1m rectangle (without center line)
+        measured_points_y = [-0.5, -0.4, -0.3, -0.2, -0.1, 0., 0.1, 0.2, 0.3, 0.4, 0.5]
+
     class init_state( LeggedRobotCfg.init_state ):
         pos = [0.0, 0.0, 0.42] # x,y,z [m]
         default_joint_angles = { # = target angles [rad] when action = 0.0
-            'FL_hip_joint': 0.1,   # [rad]
-            'RL_hip_joint': 0.1,   # [rad]
-            'FR_hip_joint': -0.1 ,  # [rad]
-            'RR_hip_joint': -0.1,   # [rad]
+            'root_joint': 0.0, # [rad]
 
-            'FL_thigh_joint': 0.8,     # [rad]
-            'RL_thigh_joint': 1.,   # [rad]
-            'FR_thigh_joint': 0.8,     # [rad]
-            'RR_thigh_joint': 1.,   # [rad]
+            'arm_left_1_joint': 0.0, # [rad]
+            'arm_left_2_joint': 0.0, # [rad]
+            'arm_left_3_joint': 0.0, # [rad]
+            'arm_left_4_joint': 0.0, # [rad]
+            'arm_left_5_joint': 0.0, # [rad]
+            'arm_left_6_joint': 0.0, # [rad]
+            'arm_left_7_joint': 0.0, # [rad]
 
-            'FL_calf_joint': -1.5,   # [rad]
-            'RL_calf_joint': -1.5,    # [rad]
-            'FR_calf_joint': -1.5,  # [rad]
-            'RR_calf_joint': -1.5,    # [rad]
+
+            'leg_left_1_joint': 0.0, # [rad]
+            'leg_left_2_joint': 0.0, # [rad]
+            'leg_left_3_joint': 0.0, # [rad]
+            'leg_left_4_joint': 0.0, # [rad]
+            'leg_left_5_joint': 0.0, # [rad]
+            'leg_left_6_joint': 0.0, # [rad]
+
+            'torso_1_joint': 0.0, # [rad]
+            'torso_2_joint': 0.0, # [rad]
+
+            'arm_right_1_joint': 0.0, # [rad]
+            'arm_right_2_joint': 0.0, # [rad]
+            'arm_right_3_joint': 0.0, # [rad]
+            'arm_right_4_joint': 0.0, # [rad]
+
+            'leg_right_1_joint': 0.0, # [rad]
+            'leg_right_2_joint': 0.0, # [rad]
+            'leg_right_3_joint': 0.0, # [rad]
+            'leg_right_4_joint': 0.0, # [rad]
+            'leg_right_5_joint': 0.0, # [rad]
+            'leg_right_6_joint': 0.0, # [rad]
         }
 
     class control( LeggedRobotCfg.control ):
         # PD Drive parameters:
-        control_type = 'P'
-        stiffness = {'joint': 20.}  # [N*m/rad]
-        damping = {'joint': 0.5}     # [N*m*s/rad]
+        stiffness = { }  # [N*m/rad]
+        #   'hip_abduction': 100.0, 'hip_rotation': 100.0,
+        #                 'hip_flexion': 200., 'thigh_joint': 200., 'ankle_joint': 200.,
+        #                 'toe_joint': 40.
+        damping = { }  # [N*m*s/rad]     # [N*m*s/rad]
+        # 'hip_abduction': 3.0, 'hip_rotation': 3.0,
+        #             'hip_flexion': 6., 'thigh_joint': 6., 'ankle_joint': 6.,
+        #             'toe_joint': 1.
         # action scale: target angle = actionScale * action + defaultAngle
-        action_scale = 0.25
+        action_scale = 0.5
         # decimation: Number of control action updates @ sim DT per policy DT
         decimation = 4
-
+        
     class asset( LeggedRobotCfg.asset ):
-        file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/talos/urdf/talos.urdf'
-        name = "a1"
-        foot_name = "foot"
-        penalize_contacts_on = ["thigh", "calf"]
-        terminate_after_contacts_on = ["base"]
+        file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/talos/urdf/talos_reduced.urdf'
+        name = "talos"
+        foot_name = 'toe'
+        terminate_after_contacts_on = ['pelvis']
+        flip_visual_attachments = False
         self_collisions = 1 # 1 to disable, 0 to enable...bitwise filter
   
     class rewards( LeggedRobotCfg.rewards ):
-        soft_dof_pos_limit = 0.9
-        base_height_target = 0.25
+        soft_dof_pos_limit = 0.95
+        soft_dof_vel_limit = 0.9
+        soft_torque_limit = 0.9
+        max_contact_force = 300.
+        only_positive_rewards = False
         class scales( LeggedRobotCfg.rewards.scales ):
-            torques = -0.0002
-            dof_pos_limits = -10.0
+            termination = -200.
+            tracking_ang_vel = 1.0
+            torques = -5.e-6
+            dof_acc = -2.e-7
+            lin_vel_z = -0.5
+            feet_air_time = 5.
+            dof_pos_limits = -1.
+            no_fly = 0.25
+            dof_vel = -0.0
+            ang_vel_xy = -0.0
+            feet_contact_forces = -0.
 
 class TalosRoughCfgPPO( LeggedRobotCfgPPO ):
-    class algorithm( LeggedRobotCfgPPO.algorithm ):
-        entropy_coef = 0.01
+    
     class runner( LeggedRobotCfgPPO.runner ):
         run_name = ''
-        experiment_name = 'rough_talos'
+        experiment_name = 'rough_cassie'
 
-"""
-leg_left_1_joint
-{'FL_hip_joint': 0.1, 'RL_hip_joint': 0.1, 'FR_hip_joint': -0.1, 'RR_hip_joint': -0.1, 'FL_thigh_joint': 0.8, 'RL_thigh_joint': 1.0, 'FR_thigh_joint': 0.8, 'RR_thigh_joint': 1.0, 'FL_calf_joint': -1.5, 'RL_calf_joint': -1.5, 'FR_calf_joint': -1.5, 'RR_calf_joint': -1.5}
-"""
+    class algorithm( LeggedRobotCfgPPO.algorithm):
+        entropy_coef = 0.01
+
+
+
+  
